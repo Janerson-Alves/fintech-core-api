@@ -1,39 +1,25 @@
-package br.com.jaanalves.fintechcoreapi.entities;
+package br.com.jaanalves.fintechcoreapi.dto;
 
 import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "tb_conta")
-public class Conta {
-    // ID Gerado automaticamente
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ContaResponseDTO {
+
     private Long id;
-    // Coluna não nula
-    @Column(nullable = false)
     private String titular;
-    // Coluna não nula e unica
-    @Column(nullable = false, unique = true)
     private String cpf;
-    // Coluna não nula e unica
-    @Column(nullable = false, unique = true)
     private String numeroConta;
-    // Coluna não nula
-    @Column(nullable = false)
     private BigDecimal saldo;
-    // Coluna Enumerada e não nula
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private StatusConta status;
 
-    // Construtor sem parâmetros
-    public Conta() {}
+    // Construtor sem parametros
+    public ContaResponseDTO() {}
 
-    // Construtor Com parâmetros
-    public Conta(Long id, String titular, String cpf, String numeroConta, BigDecimal saldo, StatusConta status) {
+    // Construtor com Parâmetros
+    public ContaResponseDTO(Long id, String titular, String cpf, String numeroConta,
+                            BigDecimal saldo, StatusConta status) {
         this.id = id;
         this.titular = titular;
         this.cpf = cpf;
