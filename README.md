@@ -7,9 +7,10 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 ## 🛠️ Tecnologias Utilizadas
 
 * **Java 21**
-* **Spring Boot 3.x** (Spring Data JPA, Spring Web, Validation)
+* **Spring Boot 3.x** (Spring Data JPA, Spring Web, Bean Validation)
 * **PostgreSQL** (Via Docker Compose)
 * **Hibernate / JPA**
+* **JUnit 5 & Mockito**
 * **Maven**
 
 ---
@@ -24,5 +25,13 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 ## ⚙️ Regras de Negócio e Serviços
 
 * **Abertura de Conta Digital:** Validação de CPF único e depósito inicial mínimo de R$ 50,00.
-* **Geração de Número de Conta:** Algoritmo randômico de 6 dígitos com verificação de colisão.
-* **Testes Unitários:** Cobertura das regras do `ContaService` utilizando JUnit 5 e Mockito.
+* **Geração de Número de Conta:** Algoritmo randômico de 6 dígitos com verificação de colisão no banco de dados.
+* **Testes Unitários:** Cobertura total das regras do `ContaService` e interações de repositório utilizando JUnit 5 e Mockito.
+
+---
+
+## 📍 Endpoints da API
+
+### Contas (`/api/contas`)
+* `POST /api/contas` - Realiza a abertura de uma nova conta digital (Exige titular, CPF válido e saldo inicial $\ge 50.00$). Retorna `201 Created`.
+* `GET /api/contas/{numeroConta}` - Consulta os dados cadastrais e saldo da conta pelo número de 6 dígitos. Retorna `200 OK`.

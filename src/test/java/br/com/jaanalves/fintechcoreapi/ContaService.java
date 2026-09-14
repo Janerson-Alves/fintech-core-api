@@ -1,4 +1,4 @@
-package br.com.jaanalves.fintechcoreapi.services;
+package br.com.jaanalves.fintechcoreapi;
 
 import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
