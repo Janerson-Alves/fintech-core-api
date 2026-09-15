@@ -2,12 +2,14 @@ package br.com.jaanalves.fintechcoreapi.services;
 
 import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
+import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
 import br.com.jaanalves.fintechcoreapi.entities.Conta;
 import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
 import br.com.jaanalves.fintechcoreapi.repository.ContaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -79,7 +81,7 @@ public class ContaService {
     public ContaResponseDTO buscarPorNumeroConta(String numeroConta) {
         Optional<Conta> contaEncontrada = contaRepository.findByNumeroConta(numeroConta);
 
-        // Se não existir a conta
+        // Se não existir a conta, retorna uma exceção de NOT FOUND
         if (contaEncontrada.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -100,6 +102,47 @@ public class ContaService {
 
         // retorna as info da conta
         return responseDTO;
+    }
+
+    // Método para realizar o deposito
+    @Transactional // Garante Atomicidade na alteração do saldo no Banco.
+    public ContaResponseDTO depositar(String numeroConta, DepositoRequestDTO dto) {
+        Optional<Conta> contaEncontrada = contaRepository.findByNumeroConta(numeroConta);
+        // Se não existir a conta, retorna uma exceção de NOT FOUND
+        if (contaEncontrada.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Conta não encontrada"
+            );
+        }
+        // Caso a conta exista, ela vai trazer as informações
+        Conta conta = contaEncontrada.get();
+
+        // Caso a conta esteja BLOQUEADA/ENCERRADA
+        if (conta.getStatus() != StatusConta.ATIVA) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Conta desativada ou bloqueada."
+            );
+        }
+
+        // CASO A CONTA ESTEJA ATIVA.
+        // Adiciona o valor a saldo
+        conta.setSaldo(conta.getSaldo().add(dto.getValor()));
+        // salvando a conta no banco de dados com as suas alterações de saldo.
+        Conta contaSalva = contaRepository.save(conta);
+        // Instancia um Response com as informações da conta
+        ContaResponseDTO responseDTO = new ContaResponseDTO();
+        responseDTO.setId(conta.getId());
+        responseDTO.setTitular(conta.getTitular());
+        responseDTO.setCpf(conta.getCpf());
+        responseDTO.setNumeroConta(conta.getNumeroConta());
+        responseDTO.setSaldo(conta.getSaldo());
+        responseDTO.setStatus(conta.getStatus());
+
+        // retorna as info da conta
+        return responseDTO;
+
     }
 
 

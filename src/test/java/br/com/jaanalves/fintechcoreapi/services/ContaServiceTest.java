@@ -2,6 +2,7 @@ package br.com.jaanalves.fintechcoreapi.services;
 
 import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
+import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
 import br.com.jaanalves.fintechcoreapi.entities.Conta;
 import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
 import br.com.jaanalves.fintechcoreapi.repository.ContaRepository;
@@ -14,13 +15,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 // Integra o Mockito ao JUNIT 5, permitindo annotations
 // @Mock e @InjectMocks sejam inicializados automaticamente
@@ -117,6 +118,74 @@ public class ContaServiceTest {
         );
 
         // VEIFY
+
+        // Garante que o metodo SAVE nunca foi chamado
+        // pois o cadastro deve ser interrompido quando ele encontra o cpf duplicado
+        Mockito.verify(contaRepository, never())
+                .save(any());
+    }
+
+    // Teste de realizar Deposito
+    @Test
+    void deveRealizarDepositoComSucesso() {
+        // Instanciando uma nova conta
+        Conta conta = new Conta();
+        conta.setId(1L);
+        conta.setTitular("Joao Mario");
+        conta.setCpf("111.222.333-44");
+        conta.setNumeroConta("123456");
+        conta.setSaldo(new BigDecimal("500.00"));
+        conta.setStatus(StatusConta.ATIVA);
+
+        // Instanciando um novo deposito
+        DepositoRequestDTO dto = new DepositoRequestDTO();
+        dto.setValor(new BigDecimal("100.00"));
+
+        // Verifica se o numero da conta está igual ao que passamos
+        when(contaRepository.findByNumeroConta("123456"))
+                .thenReturn(Optional.of(conta));
+
+        // Simulando o salvamento no banco
+        when(contaRepository.save(conta))
+                .thenReturn(conta);
+
+        // ACT deposito
+        ContaResponseDTO response = contaService.depositar("123456", dto);
+
+        // ASSERTS
+        // response nao pode ser vazio e o get saldo precisa ser igual a 600
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(new BigDecimal("600.00"), response.getSaldo());
+
+        // Verifica se a conta existe e se foi salva no simulador
+        verify(contaRepository).findByNumeroConta("123456");
+        verify(contaRepository).save(conta);
+
+    }
+
+    @Test
+    void naoDeveDepositarEmContaInexistenteOuInativa () {
+        // Instanciando uma nova conta
+        Conta conta = new Conta();
+        conta.setId(1L);
+        conta.setTitular("Joao Mario");
+        conta.setCpf("111.222.333-44");
+        conta.setNumeroConta("123456");
+        conta.setSaldo(new BigDecimal("500.00"));
+        conta.setStatus(StatusConta.BLOQUEADA);
+
+        // Instanciando um novo deposito
+        DepositoRequestDTO dto = new DepositoRequestDTO();
+        dto.setValor(new BigDecimal("100.00"));
+
+        when(contaRepository.findByNumeroConta("123456"))
+                .thenReturn(Optional.of(conta));
+
+        // Executa o metodo de depositar e verificar se ele lança a exceção
+        Assertions.assertThrows(
+                ResponseStatusException.class,
+                () -> contaService.depositar("123456", dto)
+        );
 
         // Garante que o metodo SAVE nunca foi chamado
         // pois o cadastro deve ser interrompido quando ele encontra o cpf duplicado

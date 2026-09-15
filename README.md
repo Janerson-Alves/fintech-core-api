@@ -26,7 +26,8 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 
 * **Abertura de Conta Digital:** Validação de CPF único e depósito inicial mínimo de R$ 50,00.
 * **Geração de Número de Conta:** Algoritmo randômico de 6 dígitos com verificação de colisão no banco de dados.
-* **Testes Unitários:** Cobertura total das regras do `ContaService` e interações de repositório utilizando JUnit 5 e Mockito.
+* **Operação de Depósito:** Acréscimo atômico de saldo via `@Transactional` com validação de status de conta `ATIVA`.
+* **Testes Unitários:** Cobertura de regras de negócio de abertura, busca e depósito com JUnit 5 e Mockito.
 
 ---
 
@@ -35,3 +36,4 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 ### Contas (`/api/contas`)
 * `POST /api/contas` - Realiza a abertura de uma nova conta digital (Exige titular, CPF válido e saldo inicial $\ge 50.00$). Retorna `201 Created`.
 * `GET /api/contas/{numeroConta}` - Consulta os dados cadastrais e saldo da conta pelo número de 6 dígitos. Retorna `200 OK`.
+* `PUT /api/contas/{numeroConta}/deposito` - Realiza o depósito de valores em uma conta ativa. Retorna `200 OK`.

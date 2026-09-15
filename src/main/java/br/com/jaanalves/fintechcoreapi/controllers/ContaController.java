@@ -2,6 +2,7 @@ package br.com.jaanalves.fintechcoreapi.controllers;
 
 import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
+import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
 import br.com.jaanalves.fintechcoreapi.services.ContaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,15 @@ public class ContaController {
         ContaResponseDTO responseDTO = contaService.buscarPorNumeroConta(numeroConta);
         // Se existir a conta, retorna ok
         return ResponseEntity.ok(responseDTO);
+    }
+
+    // PUT -> depositar valores a conta ATIVA.
+    @PutMapping("/{numeroConta}/deposito")
+    public ResponseEntity<ContaResponseDTO> depositar(@PathVariable String numeroConta,
+                                                      @Valid @RequestBody DepositoRequestDTO dto) {
+        // Chama o Método para Depositar, se for com sucesso, ele retorna OK.
+        ContaResponseDTO response = contaService.depositar(numeroConta, dto);
+        return ResponseEntity.ok(response);
     }
 
 
