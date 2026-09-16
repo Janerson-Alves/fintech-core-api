@@ -31,9 +31,14 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 
 ---
 
+
+
 ## 📍 Endpoints da API
 
 ### Contas (`/api/contas`)
 * `POST /api/contas` - Realiza a abertura de uma nova conta digital (Exige titular, CPF válido e saldo inicial $\ge 50.00$). Retorna `201 Created`.
 * `GET /api/contas/{numeroConta}` - Consulta os dados cadastrais e saldo da conta pelo número de 6 dígitos. Retorna `200 OK`.
 * `PUT /api/contas/{numeroConta}/deposito` - Realiza o depósito de valores em uma conta ativa. Retorna `200 OK`.
+
+### 💸 Operações Financeiras
+* **POST `/api/contas/transferencia`:** Realiza transferência de saldo entre contas ativas. Requer payload com `numeroContaOrigem`, `numeroContaDestino` e `valor`.

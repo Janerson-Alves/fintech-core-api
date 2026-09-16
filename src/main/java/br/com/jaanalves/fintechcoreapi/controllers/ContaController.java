@@ -3,8 +3,10 @@ package br.com.jaanalves.fintechcoreapi.controllers;
 import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
 import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
+import br.com.jaanalves.fintechcoreapi.dto.TransferenciaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.services.ContaService;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +41,15 @@ public class ContaController {
     public ResponseEntity<ContaResponseDTO> depositar(@PathVariable String numeroConta,
                                                       @Valid @RequestBody DepositoRequestDTO dto) {
         // Chama o Método para Depositar, se for com sucesso, ele retorna OK.
-        ContaResponseDTO response = contaService.depositar(numeroConta, dto);
-        return ResponseEntity.ok(response);
+        ContaResponseDTO deposito = contaService.depositar(numeroConta, dto);
+        return ResponseEntity.ok(deposito);
+    }
+
+    // POST -> Transferência entre contas
+    @PostMapping("/transferencia")
+    public ResponseEntity<String> transferencia(@Valid @RequestBody TransferenciaRequestDTO dto) {
+        contaService.transferir(dto);
+        return ResponseEntity.ok("Transferência realizada com sucesso.");
     }
 
 

@@ -3,6 +3,7 @@ package br.com.jaanalves.fintechcoreapi.services;
 import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
 import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
+import br.com.jaanalves.fintechcoreapi.dto.TransferenciaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.entities.Conta;
 import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
 import br.com.jaanalves.fintechcoreapi.repository.ContaRepository;
@@ -143,6 +144,56 @@ public class ContaService {
         // retorna as info da conta
         return responseDTO;
 
+    }
+
+     // Método de transferência entre contas
+    @Transactional // Garante Atomicidade na alteração do saldo no Banco.
+    public void transferir(TransferenciaRequestDTO dto) {
+
+        // Verifica se as duas contas são iguais.
+        if (dto.getNumeroContaOrigem().equalsIgnoreCase(dto.getNumeroContaDestino())) {
+            throw new IllegalArgumentException(
+                    "A conta de origem não pode ser igual a de destino."
+            );
+        }
+
+        // Buscar as duas contas no repositório
+        Optional<Conta> contaOrigemEncontrada = contaRepository.findByNumeroConta(dto.getNumeroContaOrigem());
+        Optional<Conta> contaDestinoEncontrada = contaRepository.findByNumeroConta(dto.getNumeroContaDestino());
+
+        // Verifica se as contas existem.
+        if (contaOrigemEncontrada.isEmpty() || (contaDestinoEncontrada.isEmpty())){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Conta de Destino ou Origem não encontrada"
+            );
+        }
+        // Informações da conta.
+        Conta contaOrigem = contaOrigemEncontrada.get();
+        Conta contaDestino = contaDestinoEncontrada.get();
+
+        // Verifica se a conta está em estado ativa.
+        if (contaOrigem.getStatus() != StatusConta.ATIVA || contaDestino.getStatus() != StatusConta.ATIVA) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "A conta de Origem ou Destino está BLOQUEADA/ENCERRADA."
+            );
+        }
+
+        // Verifica se a conta de destino possui saldo suficiente.
+        if (contaOrigem.getSaldo().compareTo(dto.getValor()) < 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Saldo Insuficiente na conta de origem para transferência."
+            );
+        }
+        // Realiza o debito na origem.
+        contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(dto.getValor()));
+        // Realiza o Crédito no destino
+        contaDestino.setSaldo(contaDestino.getSaldo().add(dto.getValor()));
+
+        // Salva em ambas as contas
+        contaRepository.saveAll(List.of(contaOrigem, contaDestino));
     }
 
 

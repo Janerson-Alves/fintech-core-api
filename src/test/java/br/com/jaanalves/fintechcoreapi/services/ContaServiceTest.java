@@ -3,6 +3,7 @@ package br.com.jaanalves.fintechcoreapi.services;
 import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
 import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
+import br.com.jaanalves.fintechcoreapi.dto.TransferenciaRequestDTO;
 import br.com.jaanalves.fintechcoreapi.entities.Conta;
 import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
 import br.com.jaanalves.fintechcoreapi.repository.ContaRepository;
@@ -15,9 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.util.Assert;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -192,4 +195,158 @@ public class ContaServiceTest {
         Mockito.verify(contaRepository, never())
                 .save(any());
     }
+
+    @Test
+    void deveRealizarTransferenciaComSucesso() {
+        // Instanciando uma nova conta de origem
+        Conta contaOrigem = new Conta();
+        contaOrigem.setId(1L);
+        contaOrigem.setTitular("Joao Mario");
+        contaOrigem.setCpf("111.222.333-44");
+        contaOrigem.setNumeroConta("123456");
+        contaOrigem.setSaldo(new BigDecimal("500.00"));
+        contaOrigem.setStatus(StatusConta.ATIVA);
+
+        // Instanciando uma nova conta de destino
+        Conta contaDestino = new Conta();
+        contaDestino.setId(1L);
+        contaDestino.setTitular("Joao Mario");
+        contaDestino.setCpf("111.222.333-44");
+        contaDestino.setNumeroConta("654321");
+        contaDestino.setSaldo(new BigDecimal("300.00"));
+        contaDestino.setStatus(StatusConta.ATIVA);
+
+        // Transferencia
+        TransferenciaRequestDTO dto = new TransferenciaRequestDTO();
+        dto.setNumeroContaOrigem(contaOrigem.getNumeroConta());
+        dto.setNumeroContaDestino(contaDestino.getNumeroConta());
+        dto.setValor(new BigDecimal("50.00"));
+
+        // Verifica se a origem e destino está correto
+        when(contaRepository.findByNumeroConta(contaOrigem.getNumeroConta()))
+                .thenReturn(Optional.of(contaOrigem));
+        when(contaRepository.findByNumeroConta(contaDestino.getNumeroConta()))
+                .thenReturn(Optional.of(contaDestino));
+        // ACT
+        // Trasnfere
+        contaService.transferir(dto);
+        // ASSERT
+        // Verifica se o saldo foi transferido para destino e se foi debitado de origem.
+        Assertions.assertEquals(new BigDecimal("450.00"), contaOrigem.getSaldo());
+        Assertions.assertEquals(new BigDecimal("350.00"), contaDestino.getSaldo());
+        verify(contaRepository).saveAll(List.of(contaOrigem, contaDestino));
+
+    }
+
+    @Test
+    void naoDeveTransferirComSaldoInsuficiente() {
+        // Instanciando uma nova conta de origem
+        Conta contaOrigem = new Conta();
+        contaOrigem.setId(1L);
+        contaOrigem.setTitular("Joao Mario");
+        contaOrigem.setCpf("111.222.333-44");
+        contaOrigem.setNumeroConta("123456");
+        contaOrigem.setSaldo(new BigDecimal("100.00"));
+        contaOrigem.setStatus(StatusConta.ATIVA);
+        // Instanciando uma nova conta de destino
+        Conta contaDestino = new Conta();
+        contaDestino.setId(1L);
+        contaDestino.setTitular("Joao Mario");
+        contaDestino.setCpf("111.222.333-44");
+        contaDestino.setNumeroConta("654321");
+        contaDestino.setSaldo(new BigDecimal("300.00"));
+        contaDestino.setStatus(StatusConta.ATIVA);
+        // Transferencia
+        TransferenciaRequestDTO dto = new TransferenciaRequestDTO();
+        dto.setNumeroContaOrigem(contaOrigem.getNumeroConta());
+        dto.setNumeroContaDestino(contaDestino.getNumeroConta());
+        dto.setValor(new BigDecimal("150.00"));
+        // Verifica se a origem e destino está correto
+        when(contaRepository.findByNumeroConta(contaOrigem.getNumeroConta()))
+                .thenReturn(Optional.of(contaOrigem));
+        when(contaRepository.findByNumeroConta(contaDestino.getNumeroConta()))
+                .thenReturn(Optional.of(contaDestino));
+
+        // Executa o metodo de transferir e verificar se ele lança a exceção de saldo insuficiente
+        Assertions.assertThrows(
+                ResponseStatusException.class,
+                () -> contaService.transferir(dto)
+        );
+
+        // Garante que o metodo SAVE nunca foi chamado
+        // pois o cadastro deve ser interrompido quando ele encontra o cpf duplicado
+        Mockito.verify(contaRepository, never())
+                .saveAll(any());
+    }
+    @Test
+    void naoDeveTransferirContaInativaOuInexistente() {
+        // Instanciando uma nova conta de origem
+        Conta contaOrigem = new Conta();
+        contaOrigem.setId(1L);
+        contaOrigem.setTitular("Joao Mario");
+        contaOrigem.setCpf("111.222.333-44");
+        contaOrigem.setNumeroConta("123456");
+        contaOrigem.setSaldo(new BigDecimal("500.00"));
+        contaOrigem.setStatus(StatusConta.ATIVA);
+
+        // Instanciando uma nova conta de destino
+        Conta contaDestino = new Conta();
+        contaDestino.setId(1L);
+        contaDestino.setTitular("Joao Mario");
+        contaDestino.setCpf("111.222.333-44");
+        contaDestino.setNumeroConta("654321");
+        contaDestino.setSaldo(new BigDecimal("300.00"));
+        contaDestino.setStatus(StatusConta.BLOQUEADA);
+
+        // Transferencia
+        TransferenciaRequestDTO dto = new TransferenciaRequestDTO();
+        dto.setNumeroContaOrigem(contaOrigem.getNumeroConta());
+        dto.setNumeroContaDestino(contaDestino.getNumeroConta());
+        dto.setValor(new BigDecimal("150.00"));
+        // Verifica se a origem e destino está correto
+        when(contaRepository.findByNumeroConta(contaOrigem.getNumeroConta()))
+                .thenReturn(Optional.of(contaOrigem));
+        when(contaRepository.findByNumeroConta(contaDestino.getNumeroConta()))
+                .thenReturn(Optional.of(contaDestino));
+        // Executa o metodo de transferir e verificar se ele lança a exceção de saldo insuficiente
+        Assertions.assertThrows(
+                ResponseStatusException.class,
+                () -> contaService.transferir(dto)
+        );
+
+        // Garante que o metodo SAVE nunca foi chamado
+        // pois o cadastro deve ser interrompido quando ele encontra o cpf duplicado
+        Mockito.verify(contaRepository, never())
+                .saveAll(any());
+    }
+
+    @Test
+    void naoDeveTransferirParaPropriaConta () {
+        // Instanciando uma nova conta de origem
+        Conta contaOrigem = new Conta();
+        contaOrigem.setId(1L);
+        contaOrigem.setTitular("Joao Mario");
+        contaOrigem.setCpf("111.222.333-44");
+        contaOrigem.setNumeroConta("123456");
+        contaOrigem.setSaldo(new BigDecimal("500.00"));
+        contaOrigem.setStatus(StatusConta.ATIVA);
+
+        // Transferencia
+        TransferenciaRequestDTO dto = new TransferenciaRequestDTO();
+        dto.setNumeroContaOrigem(contaOrigem.getNumeroConta());
+        dto.setNumeroContaDestino(contaOrigem.getNumeroConta());
+        dto.setValor(new BigDecimal("150.00"));
+
+        // Executa o metodo de transferir e verificar se ele lança a exceção de saldo insuficiente
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> contaService.transferir(dto)
+        );
+
+        // Garante que o metodo SAVE nunca foi chamado
+        // pois o cadastro deve ser interrompido quando ele encontra o cpf duplicado
+        Mockito.verify(contaRepository, never())
+                .saveAll(any());
+    }
+
 }
