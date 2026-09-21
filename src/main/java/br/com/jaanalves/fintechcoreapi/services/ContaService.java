@@ -1,12 +1,12 @@
 package br.com.jaanalves.fintechcoreapi.services;
 
-import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
-import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
-import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
-import br.com.jaanalves.fintechcoreapi.dto.TransferenciaRequestDTO;
+import br.com.jaanalves.fintechcoreapi.dto.*;
 import br.com.jaanalves.fintechcoreapi.entities.Conta;
+import br.com.jaanalves.fintechcoreapi.entities.Transacao;
 import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
+import br.com.jaanalves.fintechcoreapi.enums.TipoTransacao;
 import br.com.jaanalves.fintechcoreapi.repository.ContaRepository;
+import br.com.jaanalves.fintechcoreapi.repository.TransacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,10 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ContaService {
     // Instanciando automaticamente a classe repositorio
     @Autowired
-    ContaRepository contaRepository;
+    private ContaRepository contaRepository;
+    // Instanciando o repositorio de Transação
+    @Autowired
+    private TransacaoRepository transacaoRepository;
 
     // Método para gerar o numero da conta
     public String gerarNumeroConta() {
@@ -132,6 +135,11 @@ public class ContaService {
         conta.setSaldo(conta.getSaldo().add(dto.getValor()));
         // salvando a conta no banco de dados com as suas alterações de saldo.
         Conta contaSalva = contaRepository.save(conta);
+
+        // Registrando a transação na tabela de transações
+        Transacao transacao = new Transacao(conta, TipoTransacao.DEPOSITO, dto.getValor(), "Depósito em conta");
+        transacaoRepository.save(transacao);
+
         // Instancia um Response com as informações da conta
         ContaResponseDTO responseDTO = new ContaResponseDTO();
         responseDTO.setId(conta.getId());
@@ -194,6 +202,39 @@ public class ContaService {
 
         // Salva em ambas as contas
         contaRepository.saveAll(List.of(contaOrigem, contaDestino));
+
+        // Registrando a transação para a tabela das transações
+        // ORIGEM
+        Transacao transacaoOrigem = new Transacao(
+                contaOrigem,
+                TipoTransacao.TRANSFERENCIA_ENVIADA,
+                dto.getValor(),
+                "Transferência para conta " + contaDestino.getNumeroConta()
+        );
+
+        // DESTINO
+        Transacao transacaoDestino = new Transacao(
+                contaDestino,
+                TipoTransacao.TRANSFERENCIA_RECEBIDA,
+                dto.getValor(),
+                "Tranferência recebida da conta " + contaOrigem.getNumeroConta()
+        );
+
+        // Salvando as transações.
+        transacaoRepository.saveAll(List.of(transacaoOrigem, transacaoDestino));
+    }
+
+    // Método para buscar o extrato da conta.
+    public List<TransacaoResponseDTO> obterExtrato(String numeroConta) {
+        buscarPorNumeroConta(numeroConta); // Garante que a conta existe
+        // Faz a busca das transações filtrada pelo numero da conta
+        List<Transacao> transacoes = transacaoRepository.findByContaNumeroContaOrderByDataHoraDesc(numeroConta);
+
+        // Retorna todas as transações da conta em uma lista mapeando com map
+        return transacoes.stream()
+                .map(t -> new TransacaoResponseDTO(t.getId(), t.getTipo(), t.getValor(),
+                        t.getDataHora(), t.getDescricao()))
+                .toList();
     }
 
 

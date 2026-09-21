@@ -42,3 +42,6 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 
 ### 💸 Operações Financeiras
 * **POST `/api/contas/transferencia`:** Realiza transferência de saldo entre contas ativas. Requer payload com `numeroContaOrigem`, `numeroContaDestino` e `valor`.
+
+### 🧾 Extrato e Transações
+* **GET `/api/contas/{numeroConta}/extrato`:** Retorna a lista de movimentações (depósitos e transferências enviadas/recebidas) da conta ordenadas da mais recente para a mais antiga.

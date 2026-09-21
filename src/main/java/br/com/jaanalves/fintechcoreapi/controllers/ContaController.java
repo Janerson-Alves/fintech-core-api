@@ -1,9 +1,6 @@
 package br.com.jaanalves.fintechcoreapi.controllers;
 
-import br.com.jaanalves.fintechcoreapi.dto.ContaRequestDTO;
-import br.com.jaanalves.fintechcoreapi.dto.ContaResponseDTO;
-import br.com.jaanalves.fintechcoreapi.dto.DepositoRequestDTO;
-import br.com.jaanalves.fintechcoreapi.dto.TransferenciaRequestDTO;
+import br.com.jaanalves.fintechcoreapi.dto.*;
 import br.com.jaanalves.fintechcoreapi.services.ContaService;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
@@ -11,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/contas")
@@ -50,6 +49,15 @@ public class ContaController {
     public ResponseEntity<String> transferencia(@Valid @RequestBody TransferenciaRequestDTO dto) {
         contaService.transferir(dto);
         return ResponseEntity.ok("Transferência realizada com sucesso.");
+    }
+
+    // GET -> Extrato da Conta
+    @GetMapping("/{numeroConta}/extrato")
+    public ResponseEntity<List<TransacaoResponseDTO>> obterExtrato(@PathVariable String numeroConta) {
+        // Lista de extrato filtrado pela conta
+        List<TransacaoResponseDTO> extrato = contaService.obterExtrato(numeroConta);
+        // retorna ok com corpo de todas as transações.
+        return ResponseEntity.ok(extrato);
     }
 
 
