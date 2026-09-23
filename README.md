@@ -31,8 +31,6 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 
 ---
 
-
-
 ## 📍 Endpoints da API
 
 ### Contas (`/api/contas`)
@@ -45,3 +43,8 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 
 ### 🧾 Extrato e Transações
 * **GET `/api/contas/{numeroConta}/extrato`:** Retorna a lista de movimentações (depósitos e transferências enviadas/recebidas) da conta ordenadas da mais recente para a mais antiga.
+
+---
+
+## 🛡️ Tratamento de Exceções
+* **Global Exception Handler:** Interceptação centralizada de erros com `@RestControllerAdvice` devolvendo a DTO `StandardError` para exceções de regra de negócio, validações de DTO (`@Valid`) e erros HTTP dinâmicos.
