@@ -124,10 +124,8 @@ public class ContaService {
 
         // Caso a conta esteja BLOQUEADA/ENCERRADA
         if (conta.getStatus() != StatusConta.ATIVA) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Conta desativada ou bloqueada."
-            );
+            throw new IllegalArgumentException("Conta indisponível para movimentações." +
+                    "Status atual: " + conta.getStatus());
         }
 
         // CASO A CONTA ESTEJA ATIVA.
@@ -181,11 +179,15 @@ public class ContaService {
         Conta contaDestino = contaDestinoEncontrada.get();
 
         // Verifica se a conta está em estado ativa.
-        if (contaOrigem.getStatus() != StatusConta.ATIVA || contaDestino.getStatus() != StatusConta.ATIVA) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "A conta de Origem ou Destino está BLOQUEADA/ENCERRADA."
-            );
+        if (contaOrigem.getStatus() != StatusConta.ATIVA) {
+            throw new IllegalArgumentException(
+                    "A conta de Origem indisponível para movimentações. " +
+                            "Status atual: " + contaOrigem.getStatus());
+        }
+        if (contaDestino.getStatus() != StatusConta.ATIVA) {
+            throw new IllegalArgumentException(
+                    "A conta de Destino indisponível para movimentações. " +
+                            "Status atual: " + contaDestino.getStatus());
         }
 
         // Verifica se a conta de destino possui saldo suficiente.
@@ -235,6 +237,38 @@ public class ContaService {
                 .map(t -> new TransacaoResponseDTO(t.getId(), t.getTipo(), t.getValor(),
                         t.getDataHora(), t.getDescricao()))
                 .toList();
+    }
+
+    // Método para Alterar o status da conta.
+    public ContaResponseDTO alterarStatus(Long numeroConta, StatusConta novoStatus) {
+        // Buscar a conta e verifica se existe
+        Conta conta = contaRepository.findByNumeroConta(numeroConta.toString())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Conta não encontrada"
+                ));
+
+        // Verifica se o status da conta e igual ao que estamos querendo alterar
+        if (conta.getStatus() == novoStatus) {
+            throw new IllegalArgumentException("A conta já se encontra no status " + novoStatus);
+        }
+        // Inserindo o novo status
+        conta.setStatus(novoStatus);
+
+        // Salvando as informações
+        conta = contaRepository.save(conta);
+
+        // Instancia um Response com as informações da conta
+        ContaResponseDTO responseDTO = new ContaResponseDTO();
+        responseDTO.setId(conta.getId());
+        responseDTO.setTitular(conta.getTitular());
+        responseDTO.setCpf(conta.getCpf());
+        responseDTO.setNumeroConta(conta.getNumeroConta());
+        responseDTO.setSaldo(conta.getSaldo());
+        responseDTO.setStatus(conta.getStatus());
+
+        // retorna as info da conta
+        return responseDTO;
     }
 
 

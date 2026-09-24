@@ -44,6 +44,10 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 ### 🧾 Extrato e Transações
 * **GET `/api/contas/{numeroConta}/extrato`:** Retorna a lista de movimentações (depósitos e transferências enviadas/recebidas) da conta ordenadas da mais recente para a mais antiga.
 
+### 🔒 Ciclo de Vida e Trava de Segurança
+* **Gestão de Status:** Alteração dinâmica do estado da conta (`ATIVA`, `BLOQUEADA`, `ENCERRADA`) via endpoint `PATCH`.
+* **Trava Transacional:** Bloqueio automático de qualquer movimentação financeira (depósito e transferência entre origem/destino) para contas que não estejam com status `ATIVA`.
+
 ---
 
 ## 🛡️ Tratamento de Exceções

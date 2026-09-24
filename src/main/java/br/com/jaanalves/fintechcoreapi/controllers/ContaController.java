@@ -1,6 +1,7 @@
 package br.com.jaanalves.fintechcoreapi.controllers;
 
 import br.com.jaanalves.fintechcoreapi.dto.*;
+import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
 import br.com.jaanalves.fintechcoreapi.services.ContaService;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
@@ -58,6 +59,15 @@ public class ContaController {
         List<TransacaoResponseDTO> extrato = contaService.obterExtrato(numeroConta);
         // retorna ok com corpo de todas as transações.
         return ResponseEntity.ok(extrato);
+    }
+
+    // Alterar Status da conta (ATIVA, BLOQUEADA, DESATIVADA)
+    @PatchMapping("/{numeroConta}/status")
+    public ResponseEntity<ContaResponseDTO> alterarStatus(@PathVariable Long numeroConta,
+                                                          @RequestParam StatusConta novoStatus)
+    {
+        ContaResponseDTO contaAtualizada = contaService.alterarStatus(numeroConta, novoStatus);
+        return ResponseEntity.ok(contaAtualizada);
     }
 
 
