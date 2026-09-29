@@ -6,10 +6,17 @@ import br.com.jaanalves.fintechcoreapi.services.ContaService;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -54,9 +61,16 @@ public class ContaController {
 
     // GET -> Extrato da Conta
     @GetMapping("/{numeroConta}/extrato")
-    public ResponseEntity<List<TransacaoResponseDTO>> obterExtrato(@PathVariable String numeroConta) {
+    public ResponseEntity<Page<TransacaoResponseDTO>> obterExtrato(
+            @PathVariable String numeroConta,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime dataFim,
+            @PageableDefault(page = 0, size = 10, sort = "dataHora", direction = Sort.Direction.DESC)Pageable pageable) {
         // Lista de extrato filtrado pela conta
-        List<TransacaoResponseDTO> extrato = contaService.obterExtrato(numeroConta);
+        //List<TransacaoResponseDTO> extrato = contaService.obterExtrato(numeroConta);
+
+        // Lista de extrato filtrado pela conta com paginação
+        Page<TransacaoResponseDTO> extrato = contaService.obterExtrato(numeroConta, dataInicio, dataFim, pageable);
         // retorna ok com corpo de todas as transações.
         return ResponseEntity.ok(extrato);
     }

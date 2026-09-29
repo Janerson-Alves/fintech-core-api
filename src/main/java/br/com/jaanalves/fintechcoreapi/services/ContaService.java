@@ -8,12 +8,16 @@ import br.com.jaanalves.fintechcoreapi.enums.TipoTransacao;
 import br.com.jaanalves.fintechcoreapi.repository.ContaRepository;
 import br.com.jaanalves.fintechcoreapi.repository.TransacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -227,16 +231,26 @@ public class ContaService {
     }
 
     // Método para buscar o extrato da conta.
-    public List<TransacaoResponseDTO> obterExtrato(String numeroConta) {
+    public Page<TransacaoResponseDTO> obterExtrato(String numeroConta, LocalDateTime dataInicio,
+                                                   LocalDateTime dataFim, Pageable pageable) {
         buscarPorNumeroConta(numeroConta); // Garante que a conta existe
+
+        // Trata datas Nulas
+        LocalDateTime inicio = (dataInicio != null) ?
+                dataInicio : LocalDateTime.now().minusSeconds(30L * 24 * 60 * 60); // 30 dias atrás
+        LocalDateTime fim = (dataFim != null) ? dataFim : LocalDateTime.now();
+
+        // Busca a página de transações do repositorio
         // Faz a busca das transações filtrada pelo numero da conta
-        List<Transacao> transacoes = transacaoRepository.findByContaNumeroContaOrderByDataHoraDesc(numeroConta);
+        Page<Transacao> transacaoPage = transacaoRepository.findByContaNumeroContaAndDataHoraBetween(
+                numeroConta, inicio, fim, pageable
+        );
+
 
         // Retorna todas as transações da conta em uma lista mapeando com map
-        return transacoes.stream()
+        return transacaoPage
                 .map(t -> new TransacaoResponseDTO(t.getId(), t.getTipo(), t.getValor(),
-                        t.getDataHora(), t.getDescricao()))
-                .toList();
+                        t.getDataHora(), t.getDescricao()));
     }
 
     // Método para Alterar o status da conta.

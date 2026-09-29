@@ -48,7 +48,9 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 * **Gestão de Status:** Alteração dinâmica do estado da conta (`ATIVA`, `BLOQUEADA`, `ENCERRADA`) via endpoint `PATCH`.
 * **Trava Transacional:** Bloqueio automático de qualquer movimentação financeira (depósito e transferência entre origem/destino) para contas que não estejam com status `ATIVA`.
 
----
 
 ## 🛡️ Tratamento de Exceções
 * **Global Exception Handler:** Interceptação centralizada de erros com `@RestControllerAdvice` devolvendo a DTO `StandardError` para exceções de regra de negócio, validações de DTO (`@Valid`) e erros HTTP dinâmicos.
+
+### 🧾 Extrato e Transações
+* **GET `/api/contas/{numeroConta}/extrato`:** Retorna a lista paginada de movimentações (`page`, `size`, `sort`). Permite filtragem por intervalo de datas usando `dataInicio` e `dataFim` (formato ISO-8601).
