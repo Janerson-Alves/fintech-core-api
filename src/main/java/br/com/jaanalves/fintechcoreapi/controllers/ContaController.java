@@ -3,6 +3,10 @@ package br.com.jaanalves.fintechcoreapi.controllers;
 import br.com.jaanalves.fintechcoreapi.dto.*;
 import br.com.jaanalves.fintechcoreapi.enums.StatusConta;
 import br.com.jaanalves.fintechcoreapi.services.ContaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +23,22 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Contas", description = "Endpoints para gerenciamento de contas bancárias e movimentações")
 @RestController
 @RequestMapping("/api/contas")
 public class ContaController {
+
     @Autowired
     private ContaService contaService;
 
     // Rotas
+
+    // DOCUMENTA O POST no SWAGGER.
+    @Operation(summary = "Criar nova conta", description = "Abre uma nova conta bancária com saldo mínimo de R$ 50.00")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Conta criada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos, ou CPF já cadastrado")
+    })
     // POST -> Criar a conta
     @PostMapping
     public ResponseEntity<ContaResponseDTO> criarConta(@Valid @RequestBody ContaRequestDTO dto) {
