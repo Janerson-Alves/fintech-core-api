@@ -54,6 +54,8 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 ## 🛡️ Tratamento de Exceções
 * **Global Exception Handler:** Interceptação centralizada de erros com `@RestControllerAdvice` devolvendo a DTO `StandardError` para exceções de regra de negócio, validações de DTO (`@Valid`) e erros HTTP dinâmicos.
 
-### 📚 Documentação da API (OpenAPI / Swagger)
+---
+
+## 📚 Documentação da API (OpenAPI / Swagger)
 * A documentação interativa dos endpoints está disponível através do Swagger UI.
 * **URL de Acesso:** `http://localhost:8080/swagger-ui.html`
