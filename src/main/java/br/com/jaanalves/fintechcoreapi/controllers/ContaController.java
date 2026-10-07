@@ -47,6 +47,12 @@ public class ContaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // DOCUMENTA O GET no SWAGGER.
+    @Operation(summary = "Buscar uma conta", description = "Busca uma conta, filtrando pelo numero da conta")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Conta encontrada"),
+            @ApiResponse(responseCode = "404", description = "Conta não encontrada")
+    })
     // GET - > Buscar Numero da conta
     @GetMapping("/{numeroConta}")
     public ResponseEntity<ContaResponseDTO> buscarNumeroConta(@PathVariable String numeroConta) {
@@ -56,6 +62,13 @@ public class ContaController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    // DOCUMENTA O PUT no SWAGGER.
+    @Operation(summary = "Deposita na conta", description = "Deposita valores em uma conta")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Deposito realizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao depositar - Valores Negativos"),
+            @ApiResponse(responseCode = "404", description = "Erro ao depositar - Conta Incorreta")
+    })
     // PUT -> depositar valores a conta ATIVA.
     @PutMapping("/{numeroConta}/deposito")
     public ResponseEntity<ContaResponseDTO> depositar(@PathVariable String numeroConta,
@@ -65,12 +78,22 @@ public class ContaController {
         return ResponseEntity.ok(deposito);
     }
 
+    // DOCUMENTA O PUT no SWAGGER.
+    @Operation(summary = "Deposita na conta", description = "Deposita valores em uma conta")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Transferencia Realizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro na transferencia - CONTA DE DESTINO INEXISTENTE ou BLOQUEADA/SUSPENSA")
+    })
+
     // POST -> Transferência entre contas
     @PostMapping("/transferencia")
     public ResponseEntity<String> transferencia(@Valid @RequestBody TransferenciaRequestDTO dto) {
         contaService.transferir(dto);
         return ResponseEntity.ok("Transferência realizada com sucesso.");
     }
+
+    // DOCUMENTA O GET no SWAGGER.
+    @Operation(summary = "Extrato Bancario", description = "Faz a busca do extrato bancario paginado")
 
     // GET -> Extrato da Conta
     @GetMapping("/{numeroConta}/extrato")
@@ -87,6 +110,13 @@ public class ContaController {
         // retorna ok com corpo de todas as transações.
         return ResponseEntity.ok(extrato);
     }
+
+    // DOCUMENTA O PUT no SWAGGER.
+    @Operation(summary = "Alterar Status", description = "Altera Status de uma conta")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Alteração realizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro na alteração.")
+    })
 
     // Alterar Status da conta (ATIVA, BLOQUEADA, DESATIVADA)
     @PatchMapping("/{numeroConta}/status")

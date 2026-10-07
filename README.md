@@ -59,3 +59,6 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 ## 📚 Documentação da API (OpenAPI / Swagger)
 * A documentação interativa dos endpoints está disponível através do Swagger UI.
 * **URL de Acesso:** `http://localhost:8080/swagger-ui.html`
+
+### 🛡️ Segurança & Autenticação
+* **Spring Security & JWT:** Configuração inicial de arquitetura Stateless preparada para autenticação baseada em tokens JWT (`TokenService`).
