@@ -6,9 +6,11 @@ import br.com.jaanalves.fintechcoreapi.services.ContaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Contas", description = "Endpoints para gerenciamento de contas bancárias e movimentações")
+@SecurityRequirement(name = "bearerAuth") // Exive o token JWT no swagger para todas as rotas dessa controller
 @RestController
 @RequestMapping("/api/contas")
 public class ContaController {
@@ -100,8 +103,8 @@ public class ContaController {
     public ResponseEntity<Page<TransacaoResponseDTO>> obterExtrato(
             @PathVariable String numeroConta,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime dataFim,
-            @PageableDefault(page = 0, size = 10, sort = "dataHora", direction = Sort.Direction.DESC)Pageable pageable) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataFim,
+            @ParameterObject @PageableDefault(page = 0, size = 10, sort = "dataHora", direction = Sort.Direction.DESC) Pageable pageable) {
         // Lista de extrato filtrado pela conta
         //List<TransacaoResponseDTO> extrato = contaService.obterExtrato(numeroConta);
 

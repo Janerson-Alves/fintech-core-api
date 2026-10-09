@@ -62,3 +62,10 @@ API RESTful para gestão de contas digitais e processamento de transações fina
 
 ### 🛡️ Segurança & Autenticação
 * **Spring Security & JWT:** Configuração inicial de arquitetura Stateless preparada para autenticação baseada em tokens JWT (`TokenService`).
+
+### 🛡️ Segurança & Autenticação
+* **Spring Security & JWT:** Arquitetura *Stateless* com `SessionCreationPolicy.STATELESS`.
+* **SecurityFilter Customizado:** Interceptação e validação do cabeçalho `Authorization: Bearer <token>` a cada requisição.
+* **Endpoint de Autenticação:** `POST /api/auth/login` para emissão de JWT atrelado ao CPF do titular.
+* **Proteção de Rotas:** Bloqueio de acesso não autorizado (`403 Forbidden`) em endpoints de movimentação e extrato.
+* **Swagger UI Integrado:** Suporte a Bearer Token no Swagger UI através do botão *Authorize* (`@SecurityRequirement`).
